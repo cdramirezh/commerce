@@ -12,7 +12,7 @@ class Auction(models.Model):
     title = models.CharField(max_length=64)
     description = models.TextField(blank=True)
     creationDate = models.DateField(auto_now_add=True)
-    # image .URLFiel
+    image = models.URLField(blank=True)
     # category. Field.choises could be useful
     # currentPrice IntegerField
     # active BooleanField
