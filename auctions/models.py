@@ -29,7 +29,22 @@ class Auction(models.Model):
     is_active = models.BooleanField(default=True)
     # When updating winner, the following constrain To be implemented: 
     # if winner is not null: is_active = False
-    winner = models.ForeignKey(User, on_delete= models.SET_NULL, blank=True, null=True)
+    winner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return f'{self.title} {self.creationDate} {self.price}$ {self.is_active} {self.winner}'
+
+class Comment(models.Model):
+    content = models.TextField()
+    date = models.DateField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+
+    def __str__(self):
+        content_len = len(self.content)
+        preview_thresshold = 12
+        if content_len >= preview_thresshold:
+            content_preview = self.content[0:preview_thresshold] + '...'
+        else:
+            content_preview = self.content
+        return f'{self.user}: -> {self.auction.title}: {content_preview}'
