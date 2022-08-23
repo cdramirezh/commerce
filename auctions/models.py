@@ -10,13 +10,13 @@ class User(AbstractUser):
 
 class Auction(models.Model):
     title = models.CharField(max_length=64)
-    # description
-    # creationDate
-    # image
-    # category
-    # currentPrice
-    # active
-    # winner
+    description = models.TextField(blank=True)
+    creationDate = models.DateField(auto_now_add=True)
+    # image .URLFiel
+    # category. Field.choises could be useful
+    # currentPrice IntegerField
+    # active BooleanField
+    # winner User Puede ser nulo. Dependiente de la de arriba
 
     def __str__(self):
-        return f'{self.title}'
+        return f'{self.title} {self.creationDate}'
