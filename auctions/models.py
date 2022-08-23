@@ -13,7 +13,18 @@ class Auction(models.Model):
     description = models.TextField(blank=True)
     creationDate = models.DateField(auto_now_add=True)
     image = models.URLField(blank=True)
-    # category. Field.choises could be useful
+
+    FASHION = 'FA'
+    TOYS = 'TO'
+    ELECTRONICS = 'EL'
+    HOME = 'HO'
+    CATEGORY_CHOISES = [
+        (FASHION, 'Fashion'),
+        (TOYS, 'Toys'),
+        (ELECTRONICS, 'Electronics'),
+        (HOME, 'Home')]
+    category = models.CharField(max_length=2, choices=CATEGORY_CHOISES)
+    
     # currentPrice IntegerField
     # active BooleanField
     # winner User Puede ser nulo. Dependiente de la de arriba
