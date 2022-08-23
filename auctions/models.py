@@ -25,9 +25,9 @@ class Auction(models.Model):
         (HOME, 'Home')]
     category = models.CharField(max_length=2, choices=CATEGORY_CHOISES)
     
-    # currentPrice IntegerField
+    price = models.PositiveIntegerField(help_text='Not to exceed 2147483647!')
     # active BooleanField
     # winner User Puede ser nulo. Dependiente de la de arriba
 
     def __str__(self):
-        return f'{self.title} {self.creationDate}'
+        return f'{self.title} {self.creationDate} {self.currentPrice}$'
