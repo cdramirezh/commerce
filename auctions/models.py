@@ -26,8 +26,10 @@ class Auction(models.Model):
     category = models.CharField(max_length=2, choices=CATEGORY_CHOISES)
     
     price = models.PositiveIntegerField(help_text='Not to exceed 2147483647!')
-    # active BooleanField
-    # winner User Puede ser nulo. Dependiente de la de arriba
+    is_active = models.BooleanField(default=True)
+    # When updating winner, the following constrain To be implemented: 
+    # if winner is not null: is_active = False
+    winner = models.ForeignKey(User, on_delete= models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return f'{self.title} {self.creationDate} {self.currentPrice}$'
+        return f'{self.title} {self.creationDate} {self.price}$ {self.is_active} {self.winner}'
