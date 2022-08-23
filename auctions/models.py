@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -31,6 +32,12 @@ class Auction(models.Model):
     # if winner is not null: is_active = False
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
 
+    def close():
+        pass
+
+    def set_price(self, price):
+        self.price = price
+
     def __str__(self):
         return f'{self.title} {self.creationDate} {self.price}$ {self.is_active} {self.winner}'
 
@@ -48,3 +55,21 @@ class Comment(models.Model):
         else:
             content_preview = self.content
         return f'{self.user}: -> {self.auction.title}: {content_preview}'
+
+class Bid(models.Model):
+    
+    amount = models.PositiveIntegerField()
+    date = models.DateField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user} bids {self.amount} to {self.auction.title}'
+
+    def clean(self):
+        # When creating a Bid, the following constrain must be implemented:
+        # amount > auction.price
+        if self.amount <= self.auction.price:
+            raise ValidationError(f'Amount should be greater than {self.auction.price}')
+        else:
+            self.auction.set_price(self.amount)
