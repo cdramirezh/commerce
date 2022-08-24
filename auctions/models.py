@@ -26,19 +26,29 @@ class Auction(models.Model):
         (HOME, 'Home')]
     category = models.CharField(max_length=2, choices=CATEGORY_CHOISES)
     
+    #When a new bid to the auction is created, the price is updated
     price = models.PositiveIntegerField(help_text='Not to exceed 2147483647!')
-    is_active = models.BooleanField(default=True)
-    # When updating winner, the following constrain To be implemented: 
-    # if winner is not null: is_active = False
-    winner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
-
-    def close():
-        pass
-
     def set_price(self, price):
         self.price = price
         self.save()
 
+    is_active = models.BooleanField(default=True)
+    winner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+
+    def close(self, winner):
+        self.winner=winner
+        self.save()
+    
+    def set_active_status(self,status):
+        self.is_active = status
+        self.save()
+
+    # When updating winner, the following constrain is applied: 
+    # if winner is not null: is_active = False        
+    def clean(self):
+        if self.winner is not None:
+            self.set_active_status(False)
+            
     def __str__(self):
         return f'{self.title} {self.creationDate} {self.price}$ {self.is_active} {self.winner}'
 
@@ -68,8 +78,11 @@ class Bid(models.Model):
         return f'{self.user} bids {self.amount} to {self.auction.title}'
 
     def clean(self):
-        # When creating a Bid, the following constrain is implemented:
+        # When creating a Bid, the following constrains are implemented:
         if self.amount <= self.auction.price:
             raise ValidationError(f'Amount should be greater than {self.auction.price}')
         else:
             self.auction.set_price(self.amount)
+        # Do not create bids on closed auctions
+        if not self.auction.is_active:
+            raise ValidationError(f'Cannot create bids on closed auctions')
