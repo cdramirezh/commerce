@@ -37,6 +37,7 @@ class Auction(models.Model):
 
     def set_price(self, price):
         self.price = price
+        self.save()
 
     def __str__(self):
         return f'{self.title} {self.creationDate} {self.price}$ {self.is_active} {self.winner}'
@@ -67,8 +68,7 @@ class Bid(models.Model):
         return f'{self.user} bids {self.amount} to {self.auction.title}'
 
     def clean(self):
-        # When creating a Bid, the following constrain must be implemented:
-        # amount > auction.price
+        # When creating a Bid, the following constrain is implemented:
         if self.amount <= self.auction.price:
             raise ValidationError(f'Amount should be greater than {self.auction.price}')
         else:
