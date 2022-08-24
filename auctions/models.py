@@ -37,6 +37,7 @@ class Auction(models.Model):
 
     def close(self, winner):
         self.winner=winner
+        self.set_active_status(False)
         self.save()
     
     def set_active_status(self,status):
