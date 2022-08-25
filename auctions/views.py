@@ -10,7 +10,7 @@ from .models import User, Auction
 
 def index(request):
     return render(request, "auctions/index.html", {
-        'auctions': Auction.objects.all()
+        'auctions': Auction.objects.exclude(is_active=False).all()
     })
 
 
