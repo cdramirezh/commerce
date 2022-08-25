@@ -24,7 +24,7 @@ class Auction(models.Model):
         (TOYS, 'Toys'),
         (ELECTRONICS, 'Electronics'),
         (HOME, 'Home')]
-    category = models.CharField(max_length=2, choices=CATEGORY_CHOISES)
+    category = models.CharField(max_length=2, choices=CATEGORY_CHOISES, blank=True)
     
     #When a new bid to the auction is created, the price is updated
     price = models.PositiveIntegerField(help_text='Not to exceed 2147483647!')
