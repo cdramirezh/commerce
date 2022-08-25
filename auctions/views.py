@@ -86,3 +86,11 @@ def create_auction(request):
         return render(request, "auctions/create_auction.html", {
             'form': form
         })
+
+
+def auction_page(request,auction_id):
+    auction = Auction.objects.get(id=auction_id)
+    # implement some control for when a not existing auction is requested
+    return render(request, "auctions/auction_page.html", {
+        'auction': auction
+    })
