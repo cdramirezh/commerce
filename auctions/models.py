@@ -34,6 +34,7 @@ class Auction(models.Model):
 
     is_active = models.BooleanField(default=True)
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_auctions")
 
     def close(self, winner):
         self.winner=winner
