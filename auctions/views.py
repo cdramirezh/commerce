@@ -89,8 +89,12 @@ def create_auction(request):
 
 
 def auction_page(request,auction_id):
-    auction = Auction.objects.get(id=auction_id)
-    # implement some control for when a not existing auction is requested
-    return render(request, "auctions/auction_page.html", {
-        'auction': auction
-    })
+    try:
+        auction = Auction.objects.get(id=auction_id)
+        return render(request, "auctions/auction_page.html", {
+            'auction': auction
+        })
+    except:
+        return render(request, "auctions/auction_page.html", {
+            'message': 'There was a problem getting the requested auction'
+        })
