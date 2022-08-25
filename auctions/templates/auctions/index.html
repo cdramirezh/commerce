@@ -9,7 +9,7 @@
         <p>Price {{ auction.price }}</p>
         <img src="{{ auction.image }}" alt="This auction has no image">
         <!-- The category shows the db value, not the human readable category -->
-        <p>Category: {{ auction.category }}</p>
+        <p>Category: {{ auction.get_category_display }}</p>
     {% endfor %}
     
 {% endblock %}
