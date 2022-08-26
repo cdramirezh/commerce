@@ -6,10 +6,13 @@
         <div>{{ message }}</div>
     {% else %}
 
-        <form action="{% url 'toggle_watchlist' auction.id %}" method="POST">
-            {% csrf_token %}
-            <input type="submit" value="{{ watchlist_message }}">
-        </form>
+        {% if user.is_authenticated %}
+            <form action="{% url 'toggle_watchlist' auction.id %}" method="POST">
+                {% csrf_token %}
+                <input type="submit" value="{{ watchlist_message }}">
+            </form>
+        {% else %}
+        {% endif %}
 
         <h1>Title: {{ auction.title }}</h1>
         <p>Description: {{ auction.description }}</p>
