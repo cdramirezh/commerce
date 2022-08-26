@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -90,11 +91,42 @@ def create_auction(request):
 
 def auction_page(request,auction_id):
     try:
-        auction = Auction.objects.get(id=auction_id)
-        return render(request, "auctions/auction_page.html", {
-            'auction': auction
-        })
-    except:
+        auction = Auction.objects.get(id=auction_id)    
+    except ObjectDoesNotExist:
         return render(request, "auctions/auction_page.html", {
             'message': 'There was a problem getting the requested auction'
         })
+
+    try:
+        auction_in_watchlist = auction in request.user.watchlist.all()
+        if auction_in_watchlist: watchlist_message = 'Remove from Watchlist'
+        else: watchlist_message = 'Add to Watchlist'
+        
+        return render(request, "auctions/auction_page.html", {
+            'auction': auction,
+            'watchlist_message': watchlist_message
+        })
+
+    except AttributeError:
+        return render(request, "auctions/auction_page.html", {
+            'auction': auction
+        }) 
+
+@login_required(login_url='login')
+def toggle_watchlist(request, auction_id):
+
+    try:
+        auction = Auction.objects.get(id=auction_id)
+    except ObjectDoesNotExist:
+        return render(request, "auctions/auction_page.html", {
+            'message': 'There was a problem getting the requested auction'
+        })
+
+    watchlist = request.user.watchlist.all()
+
+    if auction in watchlist :
+        request.user.watchlist.remove(auction)
+    else:
+        request.user.watchlist.add(auction)
+
+    return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
