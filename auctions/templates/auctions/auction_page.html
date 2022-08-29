@@ -20,6 +20,16 @@
         <img src="{{ auction.image }}" alt="This auction has no image">
         <p>Category: {{ auction.get_category_display }}</p>
 
+        {% if user.is_authenticated and auction.is_active %}
+            <form action="{% url 'bid' auction.id %}" method="POST">
+                {% csrf_token %}
+                <label for="id_amount">Amount:</label>
+                <input id="id_amount" type="number" name="amount" min="{{ min_bid_value }}" required="">
+                <input type="submit" value="Bid">
+            </form>
+        {% else %}
+        {% endif %}
+
     {% endif %}
 
 {% endblock %}

@@ -1,12 +1,12 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from .forms import AuctionForm
-from .models import User, Auction
+from .models import User, Auction, Bid
 
 
 def index(request):
@@ -90,6 +90,7 @@ def create_auction(request):
 
 
 def auction_page(request,auction_id):
+    #Ensure the requested auction exists
     try:
         auction = Auction.objects.get(id=auction_id)    
     except ObjectDoesNotExist:
@@ -97,20 +98,26 @@ def auction_page(request,auction_id):
             'message': 'There was a problem getting the requested auction'
         })
 
+    #Ensure the user is logged In
     try:
         auction_in_watchlist = auction in request.user.watchlist.all()
-        if auction_in_watchlist: watchlist_message = 'Remove from Watchlist'
-        else: watchlist_message = 'Add to Watchlist'
         
-        return render(request, "auctions/auction_page.html", {
-            'auction': auction,
-            'watchlist_message': watchlist_message
-        })
-
     except AttributeError:
         return render(request, "auctions/auction_page.html", {
             'auction': auction
         }) 
+
+    #Define watchlist button message
+    if auction_in_watchlist: watchlist_message = 'Remove from Watchlist'
+    else: watchlist_message = 'Add to Watchlist'
+    
+    min_bid_value = auction.price + 1
+
+    return render(request, "auctions/auction_page.html", {
+        'auction': auction,
+        'watchlist_message': watchlist_message,
+        'min_bid_value': min_bid_value
+    })
 
 @login_required(login_url='login')
 def toggle_watchlist(request, auction_id):
@@ -128,5 +135,40 @@ def toggle_watchlist(request, auction_id):
         request.user.watchlist.remove(auction)
     else:
         request.user.watchlist.add(auction)
+
+    return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
+
+@login_required(login_url='login')
+def bid(request, auction_id):
+
+    if request.method == 'POST':
+        
+        # Ensure User has not changed the amount input name
+        try:
+            amount = int(request.POST['amount'])
+        except:
+            #Implement something better, like redirecting to auction_page
+            # with an error message on the bid form
+            return render(request, "auctions/auction_page.html", {
+                'message': 'Error in bid amount Field'
+            })
+
+        user = request.user
+
+        try:
+            auction = Auction.objects.get(id=auction_id)
+        except ObjectDoesNotExist:
+            return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
+
+        bid = Bid(amount=amount,user=user,auction=auction)
+        try:
+            bid.clean()
+        except ValidationError:
+            # Error should be presented in auction url.
+            # Error message should be on the bid input itself
+            return render(request, "auctions/auction_page.html", {
+                'message': 'Error in bid amount'
+            })
+        bid.save()
 
     return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
