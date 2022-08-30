@@ -74,6 +74,7 @@ def create_auction(request):
         auction_form = AuctionForm(request.POST)
         
         if auction_form.is_valid():
+            auction_form.instance.creator = request.user
             auction_form.save()
             return render(request, "auctions/index.html")
 
@@ -111,12 +112,19 @@ def auction_page(request,auction_id):
     if auction_in_watchlist: watchlist_message = 'Remove from Watchlist'
     else: watchlist_message = 'Add to Watchlist'
     
+    # Define minimun bid value
     min_bid_value = auction.price + 1
+
+    # Define if the user is the one who created the listing
+    # Any of the two following works
+    user_is_creator = auction.creator == request.user
+    user_is_creator = auction in request.user.created_auctions.all()
 
     return render(request, "auctions/auction_page.html", {
         'auction': auction,
         'watchlist_message': watchlist_message,
-        'min_bid_value': min_bid_value
+        'min_bid_value': min_bid_value,
+        'user_is_creator': user_is_creator
     })
 
 @login_required(login_url='login')
@@ -172,3 +180,7 @@ def bid(request, auction_id):
         bid.save()
 
     return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
+
+
+def close_auction(request):
+    pass

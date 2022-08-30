@@ -53,7 +53,7 @@ class Auction(models.Model):
             self.set_active_status(False)
             
     def __str__(self):
-        return f'{self.title} {self.creationDate} {self.price}$ {self.is_active} {self.winner}'
+        return f'{self.title} {self.creationDate} {self.price}$ A:{self.is_active} W:{self.winner} C:{self.creator}'
 
 class Comment(models.Model):
     content = models.TextField()
