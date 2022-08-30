@@ -120,11 +120,16 @@ def auction_page(request,auction_id):
     user_is_creator = auction.creator == request.user
     user_is_creator = auction in request.user.created_auctions.all()
 
+    #Define if the user is the winner
+    user_is_winner = auction.winner == request.user
+
     return render(request, "auctions/auction_page.html", {
         'auction': auction,
         'watchlist_message': watchlist_message,
         'min_bid_value': min_bid_value,
-        'user_is_creator': user_is_creator
+        'user_is_creator': user_is_creator,
+        'user_is_winner': user_is_winner
+
     })
 
 @login_required(login_url='login')
@@ -181,6 +186,14 @@ def bid(request, auction_id):
 
     return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
 
+@login_required
+def close_auction(request, auction_id):
 
-def close_auction(request):
-    pass
+    #Ensure the requested auction exists
+    try:
+        auction = Auction.objects.get(id=auction_id)    
+    except ObjectDoesNotExist:
+        return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
+
+    auction.close()
+    return HttpResponseRedirect(reverse("auction", args=(auction_id,)))

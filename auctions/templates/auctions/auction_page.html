@@ -20,14 +20,29 @@
         <img src="{{ auction.image }}" alt="This auction has no image">
         <p>Category: {{ auction.get_category_display }}</p>
 
-        {% if user.is_authenticated and auction.is_active %}
-            <form action="{% url 'bid' auction.id %}" method="POST">
-                {% csrf_token %}
-                <label for="id_amount">Amount:</label>
-                <input id="id_amount" type="number" name="amount" min="{{ min_bid_value }}" required="">
-                <input type="submit" value="Bid">
-            </form>
-        {% else %}
+        {% if user.is_authenticated %}
+
+            {% if auction.is_active %}
+
+                {% if user_is_creator %}
+                    <form action="{% url 'close' auction.id %}" method="POST">
+                        {% csrf_token %}
+                        <label for="id_close">Close auction</label>
+                        <input id="id_close" type="submit" value="Close">
+                    </form>
+                {% else %}
+                    <form action="{% url 'bid' auction.id %}" method="POST">
+                        {% csrf_token %}
+                        <label for="id_amount">Amount:</label>
+                        <input id="id_amount" type="number" name="amount" min="{{ min_bid_value }}" required="">
+                        <input type="submit" value="Bid">
+                    </form>
+                {% endif %}
+            
+            {% elif user_is_winner %}
+                <div>You're the winner!</div>
+            {% else %}
+            {% endif %}
         {% endif %}
 
     {% endif %}

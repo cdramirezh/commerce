@@ -37,11 +37,26 @@ class Auction(models.Model):
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_auctions")
 
-    def close(self, winner):
-        self.winner=winner
+    def close(self):
+        # This query coulb be avoided by adding a 'last_bidder' attribe to the Auction model
+        # And implementig a method 'Auction.set_price_and_bidder(amount=self.amount, last_bidder=self.user) inside the bid clean() method
+        # If this were a real Auction site with millions of bids per second,
+        # then it would be sensible to implement the auction closing in the beforementioned way
+        # But I want to familiarize miself with the Django queries so I implement it this way
+
+        # .objects brings me the Bid manager
+        # .all() brings me the full table
+        # .filter(auction=self) is equivalent to WHERE id = ...
+        # .order_by('amount') is selfexplanatory
+        # the 'minus' (-) in '-amount' tells the order_by method to sort by descending order
+        # [0] gets the first element
+        winner = Bid.objects.all().filter(auction=self).order_by('-amount')[0].user
+
+        if winner is not None: self.winner=winner
+
         self.set_active_status(False)
         self.save()
-    
+
     def set_active_status(self,status):
         self.is_active = status
         self.save()
