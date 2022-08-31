@@ -5,7 +5,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from .forms import AuctionForm
+from .forms import AuctionForm, CommentForm
 from .models import Auction, Bid, Comment, User
 
 
@@ -126,12 +126,16 @@ def auction_page(request,auction_id):
     # Get the comments
     comments = Comment.objects.all().filter(auction=auction_id)
 
+    # Define a comment form
+    comment_form = CommentForm()
+
     return render(request, "auctions/auction_page.html", {
         'auction': auction,
         'watchlist_message': watchlist_message,
         'min_bid_value': min_bid_value,
         'user_is_creator': user_is_creator,
         'user_is_winner': user_is_winner,
+        'comment_form': comment_form,
         'comments': comments
     })
 
@@ -189,7 +193,7 @@ def bid(request, auction_id):
 
     return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
 
-@login_required
+@login_required(login_url='login')
 def close_auction(request, auction_id):
 
     #Ensure the requested auction exists
@@ -200,3 +204,29 @@ def close_auction(request, auction_id):
 
     auction.close()
     return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
+
+
+@login_required(login_url='login')
+def add_comment(request, auction_id):
+
+    if request.method == 'POST':
+
+        # Make sure the auction exist
+        try:
+            auction = Auction.objects.get(id=auction_id)
+        except ObjectDoesNotExist:
+            return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
+
+        comment_form = CommentForm(request.POST)
+
+        user = request.user
+
+        if comment_form.is_valid():
+            comment_form.instance.user = user
+            comment_form.instance.auction = auction
+            comment_form.save()
+        else:
+            # This message should be pressented in the Auction Page, wiht the auction url
+            return HttpResponse('Ivalid comment')
+    return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
+
