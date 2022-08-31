@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from .forms import AuctionForm
-from .models import User, Auction, Bid
+from .models import Auction, Bid, Comment, User
 
 
 def index(request):
@@ -123,13 +123,16 @@ def auction_page(request,auction_id):
     #Define if the user is the winner
     user_is_winner = auction.winner == request.user
 
+    # Get the comments
+    comments = Comment.objects.all().filter(auction=auction_id)
+
     return render(request, "auctions/auction_page.html", {
         'auction': auction,
         'watchlist_message': watchlist_message,
         'min_bid_value': min_bid_value,
         'user_is_creator': user_is_creator,
-        'user_is_winner': user_is_winner
-
+        'user_is_winner': user_is_winner,
+        'comments': comments
     })
 
 @login_required(login_url='login')

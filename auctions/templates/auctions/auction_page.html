@@ -44,6 +44,16 @@
             {% else %}
             {% endif %}
         {% endif %}
+        
+        <div>
+            <h1>Comments</h1>
+            {% for comment in comments %}
+                <p>
+                    <b>{{ comment.user }}: </b>
+                    {{ comment.content }}
+                </p>
+            {% endfor %}
+        </div>
 
     {% endif %}
 
