@@ -1,7 +1,14 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+
+    {% if watchlist_view %}
+        <h2>Auctions in watchlist</h2>
+    {% elif category_human_readable %}
+        <h2>Active {{ category_human_readable }} Listings</h2>
+    {% else %}
+        <h2>Active Listings</h2>
+    {% endif %}
     
     {% for auction in auctions %}
         <h1>Title: <a href="{% url 'auction' auction.id %}">{{ auction.title }}</a></h1>

@@ -230,3 +230,31 @@ def add_comment(request, auction_id):
             return HttpResponse('Ivalid comment')
     return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
 
+
+@login_required(login_url='login')
+def watchlist(request):
+    watchlist = request.user.watchlist.all()
+    return render(request, "auctions/index.html", {
+        'auctions': watchlist,
+        'watchlist_view': True
+    })
+
+def categories(request):
+    categories = Auction.CATEGORY_CHOISES
+    return render(request, "auctions/categories.html", {
+        'categories': categories
+    })
+
+
+def category(request, category):
+
+    auctions = Auction.objects.all().filter(category=category).filter(is_active=True)
+
+    category_h = ''
+    for cat in Auction.CATEGORY_CHOISES:
+        if cat[0] == category: category_h = cat[1]
+        
+    return render(request, "auctions/index.html", {
+        'category_human_readable': category_h,
+        'auctions': auctions
+    })
