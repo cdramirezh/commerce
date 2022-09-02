@@ -90,7 +90,7 @@ class Bid(models.Model):
     amount = models.PositiveIntegerField()
     date = models.DateField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE, related_name='bids')
 
     def __str__(self):
         return f'{self.user} bids {self.amount} to {self.auction.title}'

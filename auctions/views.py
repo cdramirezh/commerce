@@ -9,9 +9,17 @@ from .forms import AuctionForm, CommentForm
 from .models import Auction, Bid, Comment, User
 
 
+def get_auction_number(request):
+    try:
+        auctions_in_watchlist = request.user.watchlist.all().count()
+    except:
+        auctions_in_watchlist = 0
+    return auctions_in_watchlist
+
 def index(request):
     return render(request, "auctions/index.html", {
-        'auctions': Auction.objects.exclude(is_active=False).all()
+        'auctions': Auction.objects.exclude(is_active=False).all(),
+        'auctions_in_watchlist': get_auction_number(request)
     })
 
 
@@ -76,17 +84,19 @@ def create_auction(request):
         if auction_form.is_valid():
             auction_form.instance.creator = request.user
             auction_form.save()
-            return render(request, "auctions/index.html")
+            return HttpResponseRedirect(reverse(index))
 
         return render(request, "auctions/create_auction.html", {
             'form': auction_form,
-            'message': 'Invalid form'
+            'message': 'Invalid form',
+            'auctions_in_watchlist': get_auction_number(request)
         })
 
     else:
         form = AuctionForm()
         return render(request, "auctions/create_auction.html", {
-            'form': form
+            'form': form,
+            'auctions_in_watchlist': get_auction_number(request)
         })
 
 
@@ -96,7 +106,8 @@ def auction_page(request,auction_id):
         auction = Auction.objects.get(id=auction_id)    
     except ObjectDoesNotExist:
         return render(request, "auctions/auction_page.html", {
-            'message': 'There was a problem getting the requested auction'
+            'message': 'There was a problem getting the requested auction',
+            'auctions_in_watchlist': get_auction_number(request)
         })
 
     #Ensure the user is logged In
@@ -129,6 +140,14 @@ def auction_page(request,auction_id):
     # Define a comment form
     comment_form = CommentForm()
 
+    # Define number of bids already made of the auction
+    # number_of_bids = Bid.objects.filter(auction=auction).count()
+    number_of_bids = auction.bids.count()
+
+    # Define if your bid is the current bid
+    try: user_is_last_bidder = request.user == auction.bids.all().order_by('-amount')[0].user
+    except: user_is_last_bidder = False
+
     return render(request, "auctions/auction_page.html", {
         'auction': auction,
         'watchlist_message': watchlist_message,
@@ -136,7 +155,10 @@ def auction_page(request,auction_id):
         'user_is_creator': user_is_creator,
         'user_is_winner': user_is_winner,
         'comment_form': comment_form,
-        'comments': comments
+        'comments': comments,
+        'auctions_in_watchlist': get_auction_number(request),
+        'number_of_bids': number_of_bids,
+        'user_is_last_bidder': user_is_last_bidder
     })
 
 @login_required(login_url='login')
@@ -145,9 +167,7 @@ def toggle_watchlist(request, auction_id):
     try:
         auction = Auction.objects.get(id=auction_id)
     except ObjectDoesNotExist:
-        return render(request, "auctions/auction_page.html", {
-            'message': 'There was a problem getting the requested auction'
-        })
+        return HttpResponseRedirect(reverse("auction", args=(auction_id,)))
 
     watchlist = request.user.watchlist.all()
 
@@ -170,7 +190,8 @@ def bid(request, auction_id):
             #Implement something better, like redirecting to auction_page
             # with an error message on the bid form
             return render(request, "auctions/auction_page.html", {
-                'message': 'Error in bid amount Field'
+                'message': 'Error in bid amount Field',
+                'auctions_in_watchlist': get_auction_number(request)
             })
 
         user = request.user
@@ -187,7 +208,8 @@ def bid(request, auction_id):
             # Error should be presented in auction url.
             # Error message should be on the bid input itself
             return render(request, "auctions/auction_page.html", {
-                'message': 'Error in bid amount'
+                'message': 'Error in bid amount',
+                'auctions_in_watchlist': get_auction_number(request)
             })
         bid.save()
 
@@ -236,13 +258,15 @@ def watchlist(request):
     watchlist = request.user.watchlist.all()
     return render(request, "auctions/index.html", {
         'auctions': watchlist,
-        'watchlist_view': True
+        'watchlist_view': True,
+        'auctions_in_watchlist': watchlist.count()
     })
 
 def categories(request):
     categories = Auction.CATEGORY_CHOISES
     return render(request, "auctions/categories.html", {
-        'categories': categories
+        'categories': categories,
+        'auctions_in_watchlist': get_auction_number(request)
     })
 
 
@@ -256,5 +280,6 @@ def category(request, category):
         
     return render(request, "auctions/index.html", {
         'category_human_readable': category_h,
-        'auctions': auctions
+        'auctions': auctions,
+        'auctions_in_watchlist': get_auction_number(request)
     })

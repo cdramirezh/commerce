@@ -25,7 +25,7 @@
             </li>
             {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'watchlist' %}">Watchlist</a>
+                    <a class="nav-link" href="{% url 'watchlist' %}">Watchlist({{ auctions_in_watchlist }})</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'create_auction' %}">Create Listing</a>
