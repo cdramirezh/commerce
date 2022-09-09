@@ -50,7 +50,11 @@ class Auction(models.Model):
         # .order_by('amount') is selfexplanatory
         # the 'minus' (-) in '-amount' tells the order_by method to sort by descending order
         # [0] gets the first element
-        winner = Bid.objects.all().filter(auction=self).order_by('-amount')[0].user
+        try:
+            winner = Bid.objects.all().filter(auction=self).order_by('-amount')[0].user
+        except IndexError:
+            winner = None
+        # The latter query fails when there's no bid. Fix that
 
         if winner is not None: self.winner=winner
 

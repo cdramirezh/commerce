@@ -8,6 +8,7 @@
         <link href="{% static 'auctions/styles.css' %}" rel="stylesheet">
     </head>
     <body>
+        <div class='container'>
         <h1>Auctions</h1>
         <div>
             {% if user.is_authenticated %}
@@ -25,7 +26,10 @@
             </li>
             {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'watchlist' %}">Watchlist({{ auctions_in_watchlist }})</a>
+                    <a class="nav-link" href="{% url 'watchlist' %}">
+                        Watchlist
+                        <span class="badge bg-secondary text-white">{{ auctions_in_watchlist }}</span>
+                    </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'create_auction' %}">Create Listing</a>
@@ -46,4 +50,5 @@
         {% block body %}
         {% endblock %}
     </body>
+    <div>
 </html>
